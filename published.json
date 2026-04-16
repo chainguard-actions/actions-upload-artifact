@@ -1,0 +1,4 @@
+{
+  "upstream": "actions/upload-artifact",
+  "version": "v7.0.0"
+}
