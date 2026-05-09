@@ -1,4 +1,6 @@
 {
-  "upstream": "actions/upload-artifact",
-  "version": "v7.0.0"
+  "owner": "actions",
+  "repo": "upload-artifact",
+  "version": "",
+  "url": "https://github.com/actions/upload-artifact"
 }
