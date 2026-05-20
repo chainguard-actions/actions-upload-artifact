@@ -1,6 +1,0 @@
-{
-  "owner": "actions",
-  "name": "upload-artifact",
-  "visibility": "internal",
-  "block_publish": false
-}
