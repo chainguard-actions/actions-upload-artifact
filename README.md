@@ -6,7 +6,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
-| v7.0.0 | [`v7.0.0`](https://github.com/chainguard-actions/upload-artifact/tree/v7.0.0) | — |
+| v7.0.0 | [`v7.0.0`](https://github.com/chainguard-actions/actions--upload-artifact/tree/v7.0.0) | — |
 
 ## Privacy
 
