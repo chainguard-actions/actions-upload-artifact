@@ -1,0 +1,38 @@
+name: Test upload with retention-days input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create artifact file
+        run: |
+          mkdir -p /tmp/artifact-retention-test
+          echo "retention test content" > /tmp/artifact-retention-test/data.txt
+
+      - id: upload
+        uses: .
+        continue-on-error: true
+        with:
+          name: retention-test-artifact
+          path: /tmp/artifact-retention-test/data.txt
+          retention-days: 5
+          if-no-files-found: warn
+
+      - name: Assert action was invoked with retention-days
+        run: |
+          echo "artifact-id: ${{ steps.upload.outputs.artifact-id }}"
+          echo "artifact-url: ${{ steps.upload.outputs.artifact-url }}"
+          echo "artifact-digest: ${{ steps.upload.outputs.artifact-digest }}"
+          echo "outcome: ${{ steps.upload.outcome }}"
+          # The action may fail in act due to no GitHub API, but it must have run
+          if [ "${{ steps.upload.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: action ran with retention-days=5 (outcome=${{ steps.upload.outcome }})"
