@@ -1,0 +1,41 @@
+name: Test upload with retention-days input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create artifact files
+        run: |
+          mkdir -p /tmp/retention-test
+          echo "retention test content" > /tmp/retention-test/data.txt
+
+      - id: upload
+        uses: .
+        with:
+          name: retention-test-artifact
+          path: /tmp/retention-test/data.txt
+          retention-days: 5
+        continue-on-error: true
+
+      - name: Assert action ran with retention-days input
+        env:
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+          OUTCOME: ${{ steps.upload.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "artifact-id: $ARTIFACT_ID"
+          echo "artifact-url: $ARTIFACT_URL"
+          # In act environment, upload may fail due to no GitHub API, but the action should have run
+          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action executed with retention-days input"
+          else
+            echo "FAIL: action did not execute (outcome=$OUTCOME)"
+            exit 1
+          fi

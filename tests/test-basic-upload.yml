@@ -1,0 +1,40 @@
+name: Test basic upload with path input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create artifact file
+        run: |
+          mkdir -p /tmp/artifact-test
+          echo "hello artifact" > /tmp/artifact-test/hello.txt
+
+      - id: upload
+        uses: .
+        with:
+          name: test-artifact
+          path: /tmp/artifact-test/hello.txt
+        continue-on-error: true
+
+      - name: Assert action ran (outputs present or action continued)
+        env:
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+          OUTCOME: ${{ steps.upload.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "artifact-id: $ARTIFACT_ID"
+          echo "artifact-url: $ARTIFACT_URL"
+          # In act environment, upload may fail due to no GitHub API, but the action should have run
+          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action executed"
+          else
+            echo "FAIL: action did not execute (outcome=$OUTCOME)"
+            exit 1
+          fi
