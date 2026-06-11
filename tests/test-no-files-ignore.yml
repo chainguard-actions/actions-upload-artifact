@@ -1,0 +1,29 @@
+name: Test if-no-files-found ignore behavior
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          name: no-files-artifact
+          path: /tmp/nonexistent-path-that-does-not-exist/**
+          if-no-files-found: ignore
+        continue-on-error: true
+
+      - name: Assert action did not fail with ignore mode
+        run: |
+          echo "outcome: ${{ steps.action.outcome }}"
+          echo "artifact-id: ${{ steps.action.outputs.artifact-id }}"
+          if [ "${{ steps.action.outcome }}" = "failure" ]; then
+            echo "FAIL: action should not fail when if-no-files-found is ignore"
+            exit 1
+          fi
+          echo "PASS: action completed without failure in ignore mode"

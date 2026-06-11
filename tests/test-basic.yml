@@ -1,4 +1,4 @@
-name: Test upload with retention-days input
+name: Test basic upload with path input
 on:
   workflow_dispatch:
 jobs:
@@ -10,25 +10,22 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create files to upload
+      - name: Create a file to upload
         run: |
-          mkdir -p /tmp/retention-test
-          echo "artifact content" > /tmp/retention-test/output.txt
-          echo "more content" > /tmp/retention-test/data.txt
+          mkdir -p /tmp/upload-test
+          echo "hello world" > /tmp/upload-test/hello.txt
 
       - id: action
         uses: .
         with:
-          name: retention-test-artifact
-          path: /tmp/retention-test/
-          retention-days: 5
+          name: test-artifact
+          path: /tmp/upload-test/hello.txt
           if-no-files-found: warn
-          compression-level: '6'
         continue-on-error: true
 
-      - name: Assert action ran with retention-days input
+      - name: Assert action ran (artifact upload may fail without GitHub API but action should attempt)
         run: |
           echo "artifact-id: ${{ steps.action.outputs.artifact-id }}"
           echo "artifact-url: ${{ steps.action.outputs.artifact-url }}"
           echo "artifact-digest: ${{ steps.action.outputs.artifact-digest }}"
-          echo "PASS: action completed with retention-days=5 (upload may be empty without GitHub API)"
+          echo "PASS: action completed (upload may be empty without GitHub API)"
