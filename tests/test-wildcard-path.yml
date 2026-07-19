@@ -1,4 +1,4 @@
-name: Test basic artifact upload
+name: Test artifact upload with wildcard path pattern
 on:
   workflow_dispatch:
 jobs:
@@ -7,24 +7,27 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create test file to upload
+      - name: Create test directory with mixed file types
         run: |
-          mkdir -p /tmp/upload-test
-          echo "hello from upload test" > /tmp/upload-test/hello.txt
+          mkdir -p /tmp/wildcard-test
+          echo "text file one" > /tmp/wildcard-test/report1.txt
+          echo "text file two" > /tmp/wildcard-test/report2.txt
+          echo "binary-like data" > /tmp/wildcard-test/data.bin
+          echo "log entry" > /tmp/wildcard-test/app.log
 
       - id: upload
         uses: .
         with:
-          name: basic-test-artifact
-          path: /tmp/upload-test/hello.txt
+          name: wildcard-pattern-artifact
+          path: /tmp/wildcard-test/*.txt
 
-      - name: Assert artifact-id is non-empty
+      - name: Assert artifact-id is non-empty (wildcard matched files)
         env:
           ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
         run: |
           echo "artifact-id: $ARTIFACT_ID"
           if [ -z "$ARTIFACT_ID" ]; then
-            echo "FAIL: artifact-id is empty"
+            echo "FAIL: artifact-id is empty, wildcard upload failed"
             exit 1
           fi
           echo "PASS: artifact-id=$ARTIFACT_ID"

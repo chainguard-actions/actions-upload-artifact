@@ -1,16 +1,13 @@
-name: Test artifact upload with hidden files included
+name: Test include hidden files in artifact
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_REF: refs/heads/main
-      GITHUB_EVENT_NAME: push
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create test directory with hidden files
+      - name: Create test directory with hidden and visible files
         run: |
           mkdir -p /tmp/hidden-files-test
           echo "visible content" > /tmp/hidden-files-test/visible.txt
@@ -19,22 +16,29 @@ jobs:
 
       - id: upload
         uses: .
-        continue-on-error: true
         with:
           name: hidden-files-artifact
           path: /tmp/hidden-files-test/
-          if-no-files-found: error
           include-hidden-files: 'true'
 
-      - name: Assert action ran with include-hidden-files=true
+      - name: Assert artifact-id is non-empty (hidden files included)
+        env:
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
         run: |
-          echo "outcome: ${{ steps.upload.outcome }}"
-          OUTCOME="${{ steps.upload.outcome }}"
-          # Under act, upload may fail due to no artifact backend, but the action
-          # should have at least started and attempted the upload (not a setup error).
-          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
-            echo "PASS: action ran with include-hidden-files=true, outcome=$OUTCOME"
-          else
-            echo "FAIL: unexpected outcome=$OUTCOME"
+          echo "artifact-id: $ARTIFACT_ID"
+          if [ -z "$ARTIFACT_ID" ]; then
+            echo "FAIL: artifact-id is empty, upload failed"
             exit 1
           fi
+          echo "PASS: artifact-id=$ARTIFACT_ID"
+
+      - name: Assert artifact-url is non-empty
+        env:
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          echo "artifact-url: $ARTIFACT_URL"
+          if [ -z "$ARTIFACT_URL" ]; then
+            echo "FAIL: artifact-url is empty"
+            exit 1
+          fi
+          echo "PASS: artifact-url=$ARTIFACT_URL"

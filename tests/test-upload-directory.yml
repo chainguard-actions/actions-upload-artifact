@@ -1,4 +1,4 @@
-name: Test retention-days input
+name: Test upload directory artifact
 on:
   workflow_dispatch:
 jobs:
@@ -7,47 +7,48 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create artifact file
+      - name: Create test directory with multiple files
         run: |
-          mkdir -p /tmp/retention-test
-          echo "retention days test content" > /tmp/retention-test/data.txt
+          mkdir -p /tmp/dir-upload-test
+          echo "file one content" > /tmp/dir-upload-test/file1.txt
+          echo "file two content" > /tmp/dir-upload-test/file2.txt
+          echo "file three content" > /tmp/dir-upload-test/file3.txt
 
       - id: upload
         uses: .
         with:
-          name: retention-days-artifact
-          path: /tmp/retention-test/data.txt
-          retention-days: 1
+          name: directory-test-artifact
+          path: /tmp/dir-upload-test/
 
-      - name: Assert artifact-id is set
+      - name: Assert artifact-id is non-empty
         env:
           ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
         run: |
           echo "artifact-id: $ARTIFACT_ID"
           if [ -z "$ARTIFACT_ID" ]; then
-            echo "FAIL: expected artifact-id to be non-empty"
+            echo "FAIL: artifact-id is empty"
             exit 1
           fi
-          echo "PASS"
+          echo "PASS: artifact-id=$ARTIFACT_ID"
 
-      - name: Assert artifact-url is set
+      - name: Assert artifact-url is non-empty
         env:
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         run: |
           echo "artifact-url: $ARTIFACT_URL"
           if [ -z "$ARTIFACT_URL" ]; then
-            echo "FAIL: expected artifact-url to be non-empty"
+            echo "FAIL: artifact-url is empty"
             exit 1
           fi
-          echo "PASS"
+          echo "PASS: artifact-url=$ARTIFACT_URL"
 
-      - name: Assert artifact-digest is set
+      - name: Assert artifact-digest is non-empty
         env:
           ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
         run: |
           echo "artifact-digest: $ARTIFACT_DIGEST"
           if [ -z "$ARTIFACT_DIGEST" ]; then
-            echo "FAIL: expected artifact-digest to be non-empty"
+            echo "FAIL: artifact-digest is empty"
             exit 1
           fi
-          echo "PASS"
+          echo "PASS: artifact-digest=$ARTIFACT_DIGEST"
