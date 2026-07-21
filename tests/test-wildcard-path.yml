@@ -1,0 +1,54 @@
+name: Test artifact upload with wildcard path pattern
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create test files matching a wildcard pattern
+        run: |
+          mkdir -p /tmp/wildcard-test
+          echo "log line 1" > /tmp/wildcard-test/app.log
+          echo "log line 2" > /tmp/wildcard-test/server.log
+          echo "not a log" > /tmp/wildcard-test/readme.txt
+
+      - id: upload
+        uses: .
+        with:
+          name: test-wildcard-artifact
+          path: /tmp/wildcard-test/*.log
+
+      - name: Assert artifact-id is non-empty (wildcard upload succeeded)
+        env:
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+        run: |
+          echo "artifact-id: $ARTIFACT_ID"
+          if [ -z "$ARTIFACT_ID" ]; then
+            echo "FAIL: artifact-id is empty, wildcard upload may have failed"
+            exit 1
+          fi
+          echo "PASS: artifact-id=$ARTIFACT_ID"
+
+      - name: Assert artifact-url is non-empty
+        env:
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          echo "artifact-url: $ARTIFACT_URL"
+          if [ -z "$ARTIFACT_URL" ]; then
+            echo "FAIL: artifact-url is empty"
+            exit 1
+          fi
+          echo "PASS: artifact-url=$ARTIFACT_URL"
+
+      - name: Assert artifact-digest is non-empty
+        env:
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          echo "artifact-digest: $ARTIFACT_DIGEST"
+          if [ -z "$ARTIFACT_DIGEST" ]; then
+            echo "FAIL: artifact-digest is empty"
+            exit 1
+          fi
+          echo "PASS: artifact-digest=$ARTIFACT_DIGEST"

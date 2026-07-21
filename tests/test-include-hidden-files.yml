@@ -1,0 +1,43 @@
+name: Test upload with hidden files included
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create test directory with hidden and regular files
+        run: |
+          mkdir -p /tmp/hidden-files-test
+          echo "visible content" > /tmp/hidden-files-test/visible.txt
+          echo "hidden content" > /tmp/hidden-files-test/.hidden-file
+
+      - id: upload
+        uses: .
+        with:
+          name: test-hidden-files-artifact
+          path: /tmp/hidden-files-test/
+          include-hidden-files: 'true'
+
+      - name: Assert artifact-id is non-empty (upload succeeded with hidden files)
+        env:
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+        run: |
+          echo "artifact-id: $ARTIFACT_ID"
+          if [ -z "$ARTIFACT_ID" ]; then
+            echo "FAIL: artifact-id is empty, upload may have failed"
+            exit 1
+          fi
+          echo "PASS: artifact-id=$ARTIFACT_ID"
+
+      - name: Assert artifact-url is non-empty
+        env:
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          echo "artifact-url: $ARTIFACT_URL"
+          if [ -z "$ARTIFACT_URL" ]; then
+            echo "FAIL: artifact-url is empty"
+            exit 1
+          fi
+          echo "PASS: artifact-url=$ARTIFACT_URL"

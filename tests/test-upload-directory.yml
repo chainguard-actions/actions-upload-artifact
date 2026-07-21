@@ -1,0 +1,43 @@
+name: Test artifact upload of directory
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create test directory with multiple files
+        run: |
+          mkdir -p /tmp/dir-upload-test
+          echo "file one" > /tmp/dir-upload-test/file1.txt
+          echo "file two" > /tmp/dir-upload-test/file2.txt
+          echo "file three" > /tmp/dir-upload-test/file3.txt
+
+      - id: upload
+        uses: .
+        with:
+          name: test-directory-artifact
+          path: /tmp/dir-upload-test/
+
+      - name: Assert artifact-id is non-empty
+        env:
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+        run: |
+          echo "artifact-id: $ARTIFACT_ID"
+          if [ -z "$ARTIFACT_ID" ]; then
+            echo "FAIL: artifact-id is empty"
+            exit 1
+          fi
+          echo "PASS: artifact-id=$ARTIFACT_ID"
+
+      - name: Assert artifact-url is non-empty
+        env:
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          echo "artifact-url: $ARTIFACT_URL"
+          if [ -z "$ARTIFACT_URL" ]; then
+            echo "FAIL: artifact-url is empty"
+            exit 1
+          fi
+          echo "PASS: artifact-url=$ARTIFACT_URL"

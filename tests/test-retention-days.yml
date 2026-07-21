@@ -1,0 +1,53 @@
+name: Test retention-days input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create artifact file
+        run: |
+          mkdir -p /tmp/artifact-retention
+          echo "retention test content" > /tmp/artifact-retention/retention-test.txt
+
+      - id: upload
+        uses: .
+        with:
+          name: retention-days-test-artifact
+          path: /tmp/artifact-retention/retention-test.txt
+          retention-days: 1
+
+      - name: Assert artifact-id is set
+        env:
+          ACTUAL: ${{ steps.upload.outputs.artifact-id }}
+        run: |
+          echo "actual artifact-id: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: artifact-id output is empty"
+            exit 1
+          fi
+          echo "PASS: artifact-id is set to $ACTUAL"
+
+      - name: Assert artifact-url is set
+        env:
+          ACTUAL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          echo "actual artifact-url: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: artifact-url output is empty"
+            exit 1
+          fi
+          echo "PASS: artifact-url is set to $ACTUAL"
+
+      - name: Assert artifact-digest is set
+        env:
+          ACTUAL: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          echo "actual artifact-digest: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: artifact-digest output is empty"
+            exit 1
+          fi
+          echo "PASS: artifact-digest is set to $ACTUAL"

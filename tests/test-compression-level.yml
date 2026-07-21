@@ -1,0 +1,55 @@
+name: Test artifact upload with custom compression level
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create test file for compression test
+        run: |
+          mkdir -p /tmp/compression-test
+          # Create a file with repetitive content (compressible)
+          python3 -c "print('A' * 10000)" > /tmp/compression-test/compressible.txt
+
+      - id: upload-no-compression
+        uses: .
+        with:
+          name: test-compression-0-artifact
+          path: /tmp/compression-test/
+          compression-level: '0'
+
+      - name: Assert artifact-id is non-empty (no compression upload succeeded)
+        env:
+          ARTIFACT_ID: ${{ steps.upload-no-compression.outputs.artifact-id }}
+        run: |
+          echo "artifact-id: $ARTIFACT_ID"
+          if [ -z "$ARTIFACT_ID" ]; then
+            echo "FAIL: artifact-id is empty with compression-level=0"
+            exit 1
+          fi
+          echo "PASS: artifact-id=$ARTIFACT_ID"
+
+      - name: Create test file for max compression test
+        run: |
+          mkdir -p /tmp/compression-test-9
+          python3 -c "print('B' * 10000)" > /tmp/compression-test-9/compressible.txt
+
+      - id: upload-max-compression
+        uses: .
+        with:
+          name: test-compression-9-artifact
+          path: /tmp/compression-test-9/
+          compression-level: '9'
+
+      - name: Assert artifact-id is non-empty (max compression upload succeeded)
+        env:
+          ARTIFACT_ID: ${{ steps.upload-max-compression.outputs.artifact-id }}
+        run: |
+          echo "artifact-id: $ARTIFACT_ID"
+          if [ -z "$ARTIFACT_ID" ]; then
+            echo "FAIL: artifact-id is empty with compression-level=9"
+            exit 1
+          fi
+          echo "PASS: artifact-id=$ARTIFACT_ID"
