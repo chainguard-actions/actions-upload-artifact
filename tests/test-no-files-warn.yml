@@ -1,4 +1,4 @@
-name: Test if-no-files-found ignore
+name: Test if-no-files-found warn
 on:
   workflow_dispatch:
 jobs:
@@ -10,11 +10,11 @@ jobs:
       - id: upload
         uses: .
         with:
-          name: test-no-files-ignore
+          name: test-no-files-warn
           path: /tmp/nonexistent-path-that-does-not-exist-xyz/**
-          if-no-files-found: ignore
+          if-no-files-found: warn
 
-      - name: Assert action succeeded silently (ignore mode)
+      - name: Assert action succeeded with warning (warn mode)
         env:
           OUTCOME: ${{ steps.upload.outcome }}
           ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
@@ -22,8 +22,8 @@ jobs:
           echo "outcome: $OUTCOME"
           echo "artifact-id: '$ARTIFACT_ID'"
           if [ "$OUTCOME" != "success" ]; then
-            echo "FAIL: expected action to succeed in ignore mode, but outcome was '$OUTCOME'"
+            echo "FAIL: expected action to succeed in warn mode, but outcome was '$OUTCOME'"
             exit 1
           fi
-          echo "PASS: action completed without failure in ignore mode"
+          echo "PASS: action completed without failure in warn mode"
           echo "PASS: artifact-id is empty as expected (no files uploaded)"

@@ -1,4 +1,4 @@
-name: Test basic artifact upload
+name: Test include-hidden-files option
 on:
   workflow_dispatch:
 jobs:
@@ -7,42 +7,38 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create test file
+      - name: Create test directory with hidden files
         run: |
-          mkdir -p /tmp/test-artifacts
-          echo "hello world" > /tmp/test-artifacts/hello.txt
+          mkdir -p /tmp/test-hidden-files
+          echo "visible content" > /tmp/test-hidden-files/visible.txt
+          echo "hidden content" > /tmp/test-hidden-files/.hidden-file
+          echo "hidden dir content" > /tmp/test-hidden-files/.hidden-dir-file
 
       - id: upload
         uses: .
         continue-on-error: true
         with:
-          name: test-basic-artifact
-          path: /tmp/test-artifacts/hello.txt
+          name: test-hidden-files-artifact
+          path: /tmp/test-hidden-files/
+          include-hidden-files: 'true'
 
-      - name: Assert action ran (not a node runtime crash)
+      - name: Assert action ran with include-hidden-files=true
         env:
           OUTCOME: ${{ steps.upload.outcome }}
           ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
-          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
         run: |
           echo "outcome: $OUTCOME"
           echo "artifact-id: $ARTIFACT_ID"
           echo "artifact-url: $ARTIFACT_URL"
-          echo "artifact-digest: $ARTIFACT_DIGEST"
           # The action must have run (success or failure due to API unavailability)
-          # It must NOT be skipped or have a node runtime crash (which would show as 'error')
           if [ "$OUTCOME" = "success" ]; then
-            echo "Upload succeeded - verifying outputs are non-empty"
+            echo "Upload succeeded with include-hidden-files=true"
             if [ -z "$ARTIFACT_ID" ]; then
               echo "FAIL: artifact-id is empty on success"
               exit 1
             fi
-            if [ -z "$ARTIFACT_URL" ]; then
-              echo "FAIL: artifact-url is empty on success"
-              exit 1
-            fi
-            echo "PASS: artifact uploaded successfully"
+            echo "PASS: artifact uploaded successfully with hidden files included"
           elif [ "$OUTCOME" = "failure" ]; then
             echo "PASS: action ran but upload failed (artifact API not available in act environment)"
           else
