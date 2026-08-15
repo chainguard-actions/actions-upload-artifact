@@ -1,4 +1,4 @@
-name: Test if-no-files-found ignore
+name: Test if-no-files-found warn
 on:
   workflow_dispatch:
 jobs:
@@ -9,33 +9,31 @@ jobs:
 
       - name: Ensure the path does not exist
         run: |
-          rm -rf /tmp/nonexistent-upload-path
+          rm -rf /tmp/nonexistent-warn-path
 
       - id: upload
         uses: .
         continue-on-error: true
         with:
-          name: no-files-ignore-artifact
-          path: /tmp/nonexistent-upload-path/*.txt
-          if-no-files-found: ignore
+          name: no-files-warn-artifact
+          path: /tmp/nonexistent-warn-path/*.txt
+          if-no-files-found: warn
 
-      - name: Assert action did not fail and outputs are empty
+      - name: Assert action did not fail (warn mode should not fail)
         env:
           OUTCOME: ${{ steps.upload.outcome }}
           ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
-          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         run: |
           echo "outcome: $OUTCOME"
           echo "artifact-id: '$ARTIFACT_ID'"
-          echo "artifact-url: '$ARTIFACT_URL'"
-          # In ignore mode with no files, the action should succeed (not fail)
-          # and outputs should be empty
+          # When no files are found and if-no-files-found=warn, the action
+          # should succeed (not fail) with a warning, outputs should be empty
           if [ "$OUTCOME" = "failure" ]; then
-            echo "FAIL: action should not fail in ignore mode when no files are found"
+            echo "FAIL: action should not fail in warn mode when no files are found"
             exit 1
           fi
           if [ -n "$ARTIFACT_ID" ]; then
             echo "FAIL: artifact-id should be empty when no files are found"
             exit 1
           fi
-          echo "PASS: action completed without failure in ignore mode, outputs are empty"
+          echo "PASS: action completed without failure in warn mode, outputs are empty"

@@ -1,4 +1,4 @@
-name: Test artifact upload with retention days
+name: Test retention-days input
 on:
   workflow_dispatch:
 jobs:
@@ -6,22 +6,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Create test file
+
+      - name: Create artifact file
         run: |
-          mkdir -p /tmp/test-artifacts
-          echo "retention test content" > /tmp/test-artifacts/retention-test.txt
+          mkdir -p /tmp/retention-test
+          echo "retention days test content" > /tmp/retention-test/output.txt
+
       - id: upload
         uses: .
         with:
-          name: retention-test-artifact
-          path: /tmp/test-artifacts/retention-test.txt
+          name: retention-days-artifact
+          path: /tmp/retention-test/output.txt
           retention-days: 5
-          if-no-files-found: warn
-          compression-level: '6'
-        continue-on-error: true
-      - name: Assert action ran with retention-days input
+
+      - name: Assert artifact-id is set
+        env:
+          ACTUAL: ${{ steps.upload.outputs.artifact-id }}
         run: |
-          echo "Upload step completed with retention-days=5"
-          echo "artifact-id: ${{ steps.upload.outputs.artifact-id }}"
-          echo "artifact-url: ${{ steps.upload.outputs.artifact-url }}"
-          echo "PASS: action executed with retention-days input"
+          echo "actual artifact-id: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: artifact-id is empty"
+            exit 1
+          fi
+          echo "PASS: artifact-id is set to $ACTUAL"
+
+      - name: Assert artifact-url is set
+        env:
+          ACTUAL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          echo "actual artifact-url: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: artifact-url is empty"
+            exit 1
+          fi
+          echo "PASS: artifact-url is set to $ACTUAL"

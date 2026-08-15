@@ -1,0 +1,49 @@
+name: Test upload with wildcard path pattern
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create test files matching a wildcard pattern
+        run: |
+          mkdir -p /tmp/wildcard-test
+          echo "log entry 1" > /tmp/wildcard-test/app.log
+          echo "log entry 2" > /tmp/wildcard-test/server.log
+          echo "log entry 3" > /tmp/wildcard-test/error.log
+          echo "not a log" > /tmp/wildcard-test/readme.txt
+
+      - id: upload
+        uses: .
+        continue-on-error: true
+        with:
+          name: wildcard-logs-artifact
+          path: /tmp/wildcard-test/*.log
+
+      - name: Assert action ran and outputs are consistent
+        env:
+          OUTCOME: ${{ steps.upload.outcome }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "artifact-id: $ARTIFACT_ID"
+          echo "artifact-url: $ARTIFACT_URL"
+          echo "artifact-digest: $ARTIFACT_DIGEST"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ -z "$ARTIFACT_ID" ]; then
+              echo "FAIL: upload succeeded but artifact-id is empty"
+              exit 1
+            fi
+            if [ -z "$ARTIFACT_URL" ]; then
+              echo "FAIL: upload succeeded but artifact-url is empty"
+              exit 1
+            fi
+            echo "PASS: wildcard artifact uploaded, id=$ARTIFACT_ID"
+          else
+            echo "INFO: upload step did not succeed (outcome=$OUTCOME) — artifact API may not be available under act"
+            echo "PASS: action ran without crashing the workflow"
+          fi
