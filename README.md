@@ -8,6 +8,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
+| v3.2.1-node20 | [`v3.2.1-node20`](https://github.com/chainguard-actions/actions-upload-artifact/tree/v3.2.1-node20) | [`c24449f`](https://github.com/actions/upload-artifact/commit/c24449f33cd45d4826c6702db7e49f7cdb9b551d) |
 | v3.2.2 | [`v3.2.2`](https://github.com/chainguard-actions/actions-upload-artifact/tree/v3.2.2) | [`c6a366c`](https://github.com/actions/upload-artifact/commit/c6a366c94c3e0affe28c06c8df20a878f24da3cf) |
 | v4.6.2 | [`v4.6.2`](https://github.com/chainguard-actions/actions-upload-artifact/tree/v4.6.2) | [`ea165f8`](https://github.com/actions/upload-artifact/commit/ea165f8d65b6e75b540449e92b4886f43607fa02) |
 | v5.0.0 | [`v5.0.0`](https://github.com/chainguard-actions/actions-upload-artifact/tree/v5.0.0) | [`330a01c`](https://github.com/actions/upload-artifact/commit/330a01c490aca151604b8cf639adc76d48f6c5d4) |
