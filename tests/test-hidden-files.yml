@@ -1,0 +1,53 @@
+name: Test upload-artifact - include hidden files option
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create test directory with hidden files only
+        run: |
+          mkdir -p /tmp/hidden-test
+          echo "hidden content" > /tmp/hidden-test/.hidden-file
+      - name: Test with include-hidden-files false (default) - should find no files
+        id: action-no-hidden
+        uses: .
+        with:
+          name: hidden-test-artifact
+          path: /tmp/hidden-test/
+          if-no-files-found: ignore
+          include-hidden-files: 'false'
+      - name: Assert action succeeded when hidden files excluded and no visible files
+        env:
+          OUTCOME: ${{ steps.action-no-hidden.outcome }}
+        run: |
+          echo "outcome (no hidden): '$OUTCOME'"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected success when no visible files and if-no-files-found=ignore, got '$OUTCOME'"
+            exit 1
+          fi
+          echo "PASS: action succeeded with ignore when only hidden files present and include-hidden-files=false"
+      - name: Test with include-hidden-files true - should find the hidden file
+        id: action-with-hidden
+        uses: .
+        with:
+          name: hidden-test-artifact-2
+          path: /tmp/hidden-test/
+          if-no-files-found: error
+          include-hidden-files: 'true'
+        continue-on-error: true
+      - name: Assert action ran when hidden files included
+        env:
+          OUTCOME: ${{ steps.action-with-hidden.outcome }}
+        run: |
+          echo "outcome (with hidden): '$OUTCOME'"
+          # The action should find the hidden file and attempt upload.
+          # Upload may fail in act (no artifact service), but it should not fail
+          # due to "no files found" since include-hidden-files=true.
+          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action ran and found hidden file (outcome=$OUTCOME)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

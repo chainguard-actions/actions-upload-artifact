@@ -1,4 +1,4 @@
-name: Test merge artifacts with separate directories
+name: Test merge artifacts with custom compression level
 on:
   workflow_dispatch:
 jobs:
@@ -11,25 +11,27 @@ jobs:
         uses: .
         continue-on-error: true
         with:
-          name: merged-separate
+          name: merged-no-compression
           pattern: '*'
-          separate-directories: 'true'
+          compression-level: '0'
 
-      - name: Assert action ran with separate-directories option
+      - name: Assert action ran with compression-level=0
         env:
           OUTCOME: ${{ steps.merge.outcome }}
           ARTIFACT_ID: ${{ steps.merge.outputs.artifact-id }}
           ARTIFACT_URL: ${{ steps.merge.outputs.artifact-url }}
+          ARTIFACT_DIGEST: ${{ steps.merge.outputs.artifact-digest }}
         run: |
           echo "outcome: $OUTCOME"
           echo "artifact-id: $ARTIFACT_ID"
           echo "artifact-url: $ARTIFACT_URL"
+          echo "artifact-digest: $ARTIFACT_DIGEST"
           if [ "$OUTCOME" = "success" ]; then
             if [ -z "$ARTIFACT_ID" ]; then
               echo "FAIL: action succeeded but artifact-id is empty"
               exit 1
             fi
-            echo "PASS: artifacts merged into separate directories, id=$ARTIFACT_ID"
+            echo "PASS: artifact merged with no compression, id=$ARTIFACT_ID"
           elif [ "$OUTCOME" = "failure" ]; then
             echo "PASS: action failed gracefully (sentinel repo is not resolvable)"
           else

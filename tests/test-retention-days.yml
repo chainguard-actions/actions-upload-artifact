@@ -1,4 +1,4 @@
-name: Test merge artifacts with separate directories
+name: Test retention-days input
 on:
   workflow_dispatch:
 jobs:
@@ -7,19 +7,24 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - id: merge
+      - name: Create artifact file
+        run: |
+          mkdir -p /tmp/artifact-retention
+          echo "retention-days test artifact" > /tmp/artifact-retention/output.txt
+
+      - id: upload
         uses: .
         continue-on-error: true
         with:
-          name: merged-separate
-          pattern: '*'
-          separate-directories: 'true'
+          name: retention-days-artifact
+          path: /tmp/artifact-retention/output.txt
+          retention-days: 5
 
-      - name: Assert action ran with separate-directories option
+      - name: Assert action ran with retention-days input
         env:
-          OUTCOME: ${{ steps.merge.outcome }}
-          ARTIFACT_ID: ${{ steps.merge.outputs.artifact-id }}
-          ARTIFACT_URL: ${{ steps.merge.outputs.artifact-url }}
+          OUTCOME: ${{ steps.upload.outcome }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         run: |
           echo "outcome: $OUTCOME"
           echo "artifact-id: $ARTIFACT_ID"
@@ -29,7 +34,7 @@ jobs:
               echo "FAIL: action succeeded but artifact-id is empty"
               exit 1
             fi
-            echo "PASS: artifacts merged into separate directories, id=$ARTIFACT_ID"
+            echo "PASS: artifact uploaded with retention-days=5, id=$ARTIFACT_ID"
           elif [ "$OUTCOME" = "failure" ]; then
             echo "PASS: action failed gracefully (sentinel repo is not resolvable)"
           else
