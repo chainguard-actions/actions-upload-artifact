@@ -1,0 +1,27 @@
+name: Test no files found with warn behavior
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: upload
+        uses: .
+        with:
+          name: warn-artifact
+          path: /tmp/nonexistent-path-that-does-not-exist/**
+          if-no-files-found: warn
+
+      - name: Assert action did not fail (warn mode should not fail)
+        env:
+          OUTCOME: ${{ steps.upload.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action completed without failure in warn mode"
+          else
+            echo "FAIL: expected success (warn) but got '$OUTCOME'"
+            exit 1
+          fi

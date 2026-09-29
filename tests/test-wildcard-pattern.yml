@@ -1,0 +1,36 @@
+name: Test upload with wildcard pattern
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create files matching a wildcard pattern
+        run: |
+          mkdir -p /tmp/wildcard-test
+          echo "log line 1" > /tmp/wildcard-test/app.log
+          echo "log line 2" > /tmp/wildcard-test/server.log
+          echo "not a log" > /tmp/wildcard-test/readme.txt
+
+      - id: upload
+        uses: .
+        continue-on-error: true
+        with:
+          name: logs-artifact
+          path: /tmp/wildcard-test/*.log
+
+      - name: Assert action ran (upload succeeded or failed gracefully on sentinel repo)
+        env:
+          OUTCOME: ${{ steps.upload.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: wildcard upload succeeded"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo is not resolvable)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

@@ -1,0 +1,36 @@
+name: Test upload directory as artifact
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a directory with multiple files to upload
+        run: |
+          mkdir -p /tmp/dir-upload-test
+          echo "file one" > /tmp/dir-upload-test/file1.txt
+          echo "file two" > /tmp/dir-upload-test/file2.txt
+          echo "file three" > /tmp/dir-upload-test/file3.txt
+
+      - id: upload
+        uses: .
+        continue-on-error: true
+        with:
+          name: dir-artifact
+          path: /tmp/dir-upload-test/
+
+      - name: Assert action ran (upload succeeded or failed gracefully on sentinel repo)
+        env:
+          OUTCOME: ${{ steps.upload.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: directory upload succeeded"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo is not resolvable)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

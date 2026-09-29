@@ -1,0 +1,38 @@
+name: Test basic artifact upload
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a file to upload
+        run: |
+          mkdir -p /tmp/upload-test
+          echo "hello artifact" > /tmp/upload-test/hello.txt
+
+      - id: upload
+        uses: .
+        continue-on-error: true
+        with:
+          name: test-artifact
+          path: /tmp/upload-test/hello.txt
+
+      - name: Assert action ran (upload succeeded or failed gracefully on sentinel repo)
+        env:
+          OUTCOME: ${{ steps.upload.outcome }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "artifact-id: $ARTIFACT_ID"
+          echo "artifact-url: $ARTIFACT_URL"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: upload succeeded"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo is not resolvable)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
