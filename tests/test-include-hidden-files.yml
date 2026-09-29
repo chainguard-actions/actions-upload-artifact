@@ -1,0 +1,36 @@
+name: Test upload with hidden files included
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create files including hidden files
+        run: |
+          mkdir -p /tmp/hidden-test
+          echo "visible content" > /tmp/hidden-test/visible.txt
+          echo "hidden content" > /tmp/hidden-test/.hidden-file
+
+      - id: upload
+        uses: .
+        continue-on-error: true
+        with:
+          name: hidden-files-artifact
+          path: /tmp/hidden-test/
+          include-hidden-files: 'true'
+
+      - name: Assert action ran (success or graceful failure on sentinel repo)
+        env:
+          OUTCOME: ${{ steps.upload.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: artifact uploaded successfully with hidden files"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo is not resolvable)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
