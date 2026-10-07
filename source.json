@@ -1,6 +1,11 @@
 {
   "owner": "actions",
   "repo": "upload-artifact",
-  "version": "",
-  "url": "https://github.com/actions/upload-artifact"
+  "version": "v7.0.2",
+  "commit_sha": "cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+  "url": "https://github.com/actions/upload-artifact",
+  "policy_sha": "d636be7e43ef829af6e853da6b3c7566db9f72fe",
+  "test_policy_sha": "843adf9e4b8f85d0c08b27b9d0b09dd094b54702",
+  "test_agent_version": "2",
+  "harden_agent_version": "2"
 }
