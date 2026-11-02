@@ -4,8 +4,13 @@
   "version": "v3.2.2",
   "commit_sha": "c6a366c94c3e0affe28c06c8df20a878f24da3cf",
   "url": "https://github.com/actions/upload-artifact",
-  "policy_sha": "d636be7e43ef829af6e853da6b3c7566db9f72fe",
+  "policy_sha": "374911c4be584df24e6da57af2d990570ef0f859",
   "test_policy_sha": "843adf9e4b8f85d0c08b27b9d0b09dd094b54702",
   "test_agent_version": "2",
-  "harden_agent_version": "2"
+  "harden_agent_version": "2",
+  "dist_artifact": {
+    "gcs_uri": "gs://patch-actions-node-artifacts/dist-artifacts/actions/upload-artifact/v3.2.2/sha256-c1eaf7e2dfb6b6f9f9c5e328773886e9910528c865b2fa2c5dc488e989fd1bc5.tar.gz",
+    "sha256": "c1eaf7e2dfb6b6f9f9c5e328773886e9910528c865b2fa2c5dc488e989fd1bc5",
+    "size_bytes": 74699
+  }
 }
